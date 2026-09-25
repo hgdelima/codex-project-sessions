@@ -1,0 +1,210 @@
+{
+  "name": "codex-project-sessions",
+  "displayName": "Codex Project Sessions",
+  "description": "Organiza e retoma sessões locais do Codex por workspace ou pasta no VS Code.",
+  "version": "0.1.0",
+  "publisher": "local",
+  "private": true,
+  "engines": {
+    "vscode": "^1.106.0"
+  },
+  "categories": [
+    "Other",
+    "Machine Learning"
+  ],
+  "keywords": [
+    "codex",
+    "sessions",
+    "workspace",
+    "chat"
+  ],
+  "activationEvents": [
+    "onView:codexProjectSessions.sessionsView",
+    "onCommand:codexProjectSessions.refresh",
+    "onCommand:codexProjectSessions.chooseFolder",
+    "onCommand:codexProjectSessions.useExplorerFolder",
+    "onCommand:codexProjectSessions.followActiveWorkspace",
+    "onCommand:codexProjectSessions.resumeSession",
+    "onCommand:codexProjectSessions.showDetails",
+    "onCommand:codexProjectSessions.copySessionId",
+    "onCommand:codexProjectSessions.revealSessionFolder",
+    "onCommand:codexProjectSessions.openCodexSidebar"
+  ],
+  "main": "./src/extension.js",
+  "scripts": {
+    "check": "sh scripts/check.sh",
+    "test": "npm run check && node --test test/*.test.js",
+    "package": "npm test && sh scripts/package-vsix.sh",
+    "bundle": "sh scripts/build-portable-bundle.sh"
+  },
+  "contributes": {
+    "viewsContainers": {
+      "secondarySidebar": [
+        {
+          "id": "codexProjectSessions",
+          "title": "Sessões do Codex",
+          "icon": "media/sessions.svg"
+        }
+      ]
+    },
+    "views": {
+      "codexProjectSessions": [
+        {
+          "id": "codexProjectSessions.sessionsView",
+          "name": "Sessões",
+          "contextualTitle": "Sessões do Codex"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "codexProjectSessions.refresh",
+        "title": "Atualizar sessões",
+        "category": "Codex Sessions",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "codexProjectSessions.chooseFolder",
+        "title": "Escolher pasta do filtro",
+        "category": "Codex Sessions",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "codexProjectSessions.useExplorerFolder",
+        "title": "Usar pasta para sessões do Codex",
+        "category": "Codex Sessions"
+      },
+      {
+        "command": "codexProjectSessions.followActiveWorkspace",
+        "title": "Seguir workspace do arquivo ativo",
+        "category": "Codex Sessions",
+        "icon": "$(target)"
+      },
+      {
+        "command": "codexProjectSessions.resumeSession",
+        "title": "Abrir sessão no Codex",
+        "category": "Codex Sessions",
+        "icon": "$(debug-continue)"
+      },
+      {
+        "command": "codexProjectSessions.showDetails",
+        "title": "Visualizar detalhes",
+        "category": "Codex Sessions",
+        "icon": "$(preview)"
+      },
+      {
+        "command": "codexProjectSessions.copySessionId",
+        "title": "Copiar ID da sessão",
+        "category": "Codex Sessions",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "codexProjectSessions.revealSessionFolder",
+        "title": "Revelar pasta da sessão",
+        "category": "Codex Sessions",
+        "icon": "$(folder)"
+      },
+      {
+        "command": "codexProjectSessions.openCodexSidebar",
+        "title": "Abrir painel oficial do Codex",
+        "category": "Codex Sessions",
+        "icon": "$(comment-discussion)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "codexProjectSessions.refresh",
+          "when": "view == codexProjectSessions.sessionsView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "codexProjectSessions.chooseFolder",
+          "when": "view == codexProjectSessions.sessionsView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "codexProjectSessions.followActiveWorkspace",
+          "when": "view == codexProjectSessions.sessionsView && codexProjectSessions.folderPinned",
+          "group": "navigation@3"
+        },
+        {
+          "command": "codexProjectSessions.openCodexSidebar",
+          "when": "view == codexProjectSessions.sessionsView",
+          "group": "navigation@4"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "codexProjectSessions.resumeSession",
+          "when": "view == codexProjectSessions.sessionsView && viewItem == codexSession",
+          "group": "inline@1"
+        },
+        {
+          "command": "codexProjectSessions.showDetails",
+          "when": "view == codexProjectSessions.sessionsView && viewItem == codexSession",
+          "group": "navigation@1"
+        },
+        {
+          "command": "codexProjectSessions.revealSessionFolder",
+          "when": "view == codexProjectSessions.sessionsView && viewItem == codexSession",
+          "group": "navigation@2"
+        },
+        {
+          "command": "codexProjectSessions.copySessionId",
+          "when": "view == codexProjectSessions.sessionsView && viewItem == codexSession",
+          "group": "navigation@3"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "codexProjectSessions.useExplorerFolder",
+          "when": "explorerResourceIsFolder",
+          "group": "navigation@100"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Codex Project Sessions",
+      "properties": {
+        "codexProjectSessions.codexPath": {
+          "type": "string",
+          "default": "codex",
+          "description": "Caminho do executável do Codex CLI. Deixe como codex para usar a detecção automática."
+        },
+        "codexProjectSessions.filterMode": {
+          "type": "string",
+          "enum": [
+            "subtree",
+            "exact"
+          ],
+          "enumDescriptions": [
+            "Inclui sessões da pasta selecionada e de todas as subpastas.",
+            "Inclui somente sessões cujo diretório de trabalho é exatamente a pasta selecionada."
+          ],
+          "default": "subtree",
+          "description": "Define como a pasta selecionada filtra as sessões."
+        },
+        "codexProjectSessions.followActiveWorkspace": {
+          "type": "boolean",
+          "default": true,
+          "description": "Quando o filtro não está fixado, acompanha o workspace do arquivo ativo."
+        },
+        "codexProjectSessions.refreshIntervalSeconds": {
+          "type": "number",
+          "default": 15,
+          "minimum": 0,
+          "maximum": 3600,
+          "description": "Intervalo de atualização automática em segundos. Use 0 para desativar."
+        },
+        "codexProjectSessions.maxSessions": {
+          "type": "number",
+          "default": 200,
+          "minimum": 10,
+          "maximum": 2000,
+          "description": "Quantidade máxima de sessões exibidas no painel."
+        }
+      }
+    }
+  }
+}

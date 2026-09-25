@@ -1,0 +1,8 @@
+.agents/**
+.claude/**
+.vscode/**
+test/**
+scripts/**
+build/**
+.gitignore
+*.vsix

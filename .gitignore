@@ -1,0 +1,3 @@
+*.vsix
+*.log
+.DS_Store

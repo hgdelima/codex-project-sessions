@@ -2,7 +2,7 @@
 set -eu
 
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-version=0.1.0
+version=$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' package.json | head -1)
 bundle_name="codex-project-sessions-transfer-$version"
 temporary_root=$(mktemp -d /tmp/codex-project-sessions-transfer.XXXXXX)
 bundle_root="$temporary_root/$bundle_name"

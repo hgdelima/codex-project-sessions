@@ -4,7 +4,8 @@ set -eu
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 package_root=$(mktemp -d /tmp/codex-project-sessions.XXXXXX)
 extension_root="$package_root/extension"
-vsix_name="codex-project-sessions-0.1.0.vsix"
+version=$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' "$project_root/package.json" | head -1)
+vsix_name="codex-project-sessions-$version.vsix"
 
 mkdir -p "$extension_root/src" "$extension_root/media"
 cp "$project_root/package.json" "$extension_root/package.json"

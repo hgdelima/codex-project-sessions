@@ -2,7 +2,7 @@
   "name": "codex-project-sessions",
   "displayName": "Codex Project Sessions",
   "description": "Organiza e retoma sessões locais do Codex por workspace ou pasta no VS Code.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "local",
   "private": true,
   "engines": {

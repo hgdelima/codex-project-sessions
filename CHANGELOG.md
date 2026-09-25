@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- Corrige a abertura de sessões na janela oficial do Codex e o acompanhamento da pasta ativa no Explorer.
+
 ## 0.1.0
 
 - Painel lateral de sessões agrupadas por recência.

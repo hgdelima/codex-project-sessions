@@ -2,7 +2,7 @@
   "name": "codex-project-sessions",
   "displayName": "Codex Project Sessions",
   "description": "Organiza e retoma sessões locais do Codex por workspace ou pasta no VS Code.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "local",
   "private": true,
   "engines": {
@@ -22,9 +22,12 @@
     "onView:codexProjectSessions.sessionsView",
     "onCommand:codexProjectSessions.refresh",
     "onCommand:codexProjectSessions.chooseFolder",
+    "onCommand:codexProjectSessions.clearFolderFilter",
     "onCommand:codexProjectSessions.useExplorerFolder",
     "onCommand:codexProjectSessions.followActiveWorkspace",
     "onCommand:codexProjectSessions.resumeSession",
+    "onCommand:codexProjectSessions.moveSession",
+    "onCommand:codexProjectSessions.deleteSession",
     "onCommand:codexProjectSessions.showDetails",
     "onCommand:codexProjectSessions.copySessionId",
     "onCommand:codexProjectSessions.revealSessionFolder",
@@ -70,6 +73,12 @@
         "icon": "$(folder-opened)"
       },
       {
+        "command": "codexProjectSessions.clearFolderFilter",
+        "title": "Limpar filtro de pasta",
+        "category": "Codex Sessions",
+        "icon": "$(eraser)"
+      },
+      {
         "command": "codexProjectSessions.useExplorerFolder",
         "title": "Usar pasta para sessões do Codex",
         "category": "Codex Sessions"
@@ -85,6 +94,18 @@
         "title": "Abrir sessão no Codex",
         "category": "Codex Sessions",
         "icon": "$(debug-continue)"
+      },
+      {
+        "command": "codexProjectSessions.moveSession",
+        "title": "Mover sessão para outra pasta",
+        "category": "Codex Sessions",
+        "icon": "$(folder)"
+      },
+      {
+        "command": "codexProjectSessions.deleteSession",
+        "title": "Excluir sessão",
+        "category": "Codex Sessions",
+        "icon": "$(trash)"
       },
       {
         "command": "codexProjectSessions.showDetails",
@@ -124,14 +145,19 @@
           "group": "navigation@2"
         },
         {
+          "command": "codexProjectSessions.clearFolderFilter",
+          "when": "view == codexProjectSessions.sessionsView",
+          "group": "navigation@3"
+        },
+        {
           "command": "codexProjectSessions.followActiveWorkspace",
           "when": "view == codexProjectSessions.sessionsView && codexProjectSessions.folderPinned",
-          "group": "navigation@3"
+          "group": "navigation@4"
         },
         {
           "command": "codexProjectSessions.openCodexSidebar",
           "when": "view == codexProjectSessions.sessionsView",
-          "group": "navigation@4"
+          "group": "navigation@5"
         }
       ],
       "view/item/context": [
@@ -139,6 +165,16 @@
           "command": "codexProjectSessions.resumeSession",
           "when": "view == codexProjectSessions.sessionsView && viewItem == codexSession",
           "group": "inline@1"
+        },
+        {
+          "command": "codexProjectSessions.moveSession",
+          "when": "view == codexProjectSessions.sessionsView && viewItem == codexSession",
+          "group": "inline@2"
+        },
+        {
+          "command": "codexProjectSessions.deleteSession",
+          "when": "view == codexProjectSessions.sessionsView && viewItem == codexSession",
+          "group": "inline@3"
         },
         {
           "command": "codexProjectSessions.showDetails",

@@ -43,9 +43,6 @@ class SessionTreeProvider {
   }
 
   get message() {
-    if (!this.selectedFolder) {
-      return "Abra um workspace ou escolha uma pasta para listar as sessões.";
-    }
     if (this.loading) {
       return "Carregando sessões do Codex…";
     }
@@ -53,7 +50,9 @@ class SessionTreeProvider {
       return this.lastError;
     }
     if (this.count === 0) {
-      return "Nenhuma sessão encontrada para esta pasta.";
+      return this.selectedFolder
+        ? "Nenhuma sessão encontrada para esta pasta."
+        : "Nenhuma sessão encontrada.";
     }
     return undefined;
   }
@@ -65,13 +64,6 @@ class SessionTreeProvider {
     this.lastError = undefined;
     this.treeChanged.fire(undefined);
 
-    if (!folder) {
-      this.groups = [];
-      this.loading = false;
-      this.treeChanged.fire(undefined);
-      return;
-    }
-
     try {
       const sessions = await this.client.listSessions({
         params: {
@@ -79,13 +71,14 @@ class SessionTreeProvider {
           sortKey: "updated_at",
           sortDirection: "desc",
           sourceKinds: ["cli", "vscode"],
-          cwd: filterMode === "exact" ? folder : undefined,
+          cwd: folder && filterMode === "exact" ? folder : undefined,
         },
         maxResults: maxSessions,
-        matches:
-          filterMode === "exact"
+        matches: folder
+          ? filterMode === "exact"
             ? (session) => isExactPath(folder, session.cwd)
-            : (session) => isPathWithin(folder, session.cwd),
+            : (session) => isPathWithin(folder, session.cwd)
+          : undefined,
       });
 
       if (generation !== this.refreshGeneration) {

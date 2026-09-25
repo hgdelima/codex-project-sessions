@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2
+
+- Adiciona ações inline para excluir e mover sessões para outra pasta.
+- Adiciona o botão com ícone de borracha para limpar o filtro e exibir todas as sessões.
+
 ## 0.1.1
 
 - Corrige a abertura de sessões na janela oficial do Codex e o acompanhamento da pasta ativa no Explorer.

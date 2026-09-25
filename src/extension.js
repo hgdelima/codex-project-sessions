@@ -14,6 +14,7 @@ const {
 const viewId = "codexProjectSessions.sessionsView";
 const selectedFolderKey = "codexProjectSessions.selectedFolder";
 const folderPinnedKey = "codexProjectSessions.folderPinned";
+const allFoldersKey = "codexProjectSessions.allFolders";
 
 function activate(context) {
   const output = vscode.window.createOutputChannel("Codex Project Sessions", { log: true });
@@ -31,6 +32,7 @@ function activate(context) {
   context.subscriptions.push(treeView);
 
   let folderPinned = context.workspaceState.get(folderPinnedKey, false);
+  let allFolders = context.workspaceState.get(allFoldersKey, false);
   let refreshTimer;
   let periodicRefresh;
   let clientChangeSubscription = client.onDidChangeSessions(() => scheduleRefresh(300));
@@ -59,11 +61,13 @@ function activate(context) {
     refreshTimer = setTimeout(() => void refresh(), delayMilliseconds);
   }
 
-  const setFolder = async (folderPath, pinned) => {
+  const setFolder = async (folderPath, pinned, showAll = false) => {
     folderPinned = pinned;
+    allFolders = showAll;
     provider.setFolder(folderPath);
     await context.workspaceState.update(selectedFolderKey, folderPath);
     await context.workspaceState.update(folderPinnedKey, pinned);
+    await context.workspaceState.update(allFoldersKey, showAll);
     updateView();
     scheduleRefresh();
   };
@@ -108,6 +112,9 @@ function activate(context) {
         await setFolder(selected[0].fsPath, true);
       }
     }),
+    vscode.commands.registerCommand("codexProjectSessions.clearFolderFilter", async () => {
+      await setFolder(undefined, false, true);
+    }),
     vscode.commands.registerCommand(
       "codexProjectSessions.useExplorerFolder",
       async (resource, selectedResources) => {
@@ -122,6 +129,18 @@ function activate(context) {
       const session = unwrapSession(value);
       if (session) {
         await openCodexSession(session);
+      }
+    }),
+    vscode.commands.registerCommand("codexProjectSessions.moveSession", async (value) => {
+      const session = unwrapSession(value);
+      if (session) {
+        await moveSession(session);
+      }
+    }),
+    vscode.commands.registerCommand("codexProjectSessions.deleteSession", async (value) => {
+      const session = unwrapSession(value);
+      if (session) {
+        await deleteSession(session);
       }
     }),
     vscode.commands.registerCommand("codexProjectSessions.showDetails", async (value) => {
@@ -152,7 +171,7 @@ function activate(context) {
       }
     }),
     vscode.window.onDidChangeActiveTextEditor(async () => {
-      if (!folderPinned && getConfiguration().followActiveWorkspace) {
+      if (!folderPinned && !allFolders && getConfiguration().followActiveWorkspace) {
         const activeFolder = activeExplorerFolder();
         if (activeFolder && activeFolder.uri.fsPath !== provider.folder) {
           await setFolder(activeFolder.uri.fsPath, false);
@@ -160,7 +179,9 @@ function activate(context) {
       }
     }),
     vscode.workspace.onDidChangeWorkspaceFolders(async () => {
-      if (!folderPinned || !provider.folder || !isInsideOpenWorkspace(provider.folder)) {
+      if (allFolders) {
+        scheduleRefresh();
+      } else if (!folderPinned || !provider.folder || !isInsideOpenWorkspace(provider.folder)) {
         await followActiveWorkspace();
       } else {
         scheduleRefresh();
@@ -192,7 +213,9 @@ function activate(context) {
   );
 
   const savedFolder = context.workspaceState.get(selectedFolderKey);
-  if (folderPinned && savedFolder && isInsideOpenWorkspace(savedFolder)) {
+  if (allFolders) {
+    provider.setFolder(undefined);
+  } else if (folderPinned && savedFolder && isInsideOpenWorkspace(savedFolder)) {
     provider.setFolder(savedFolder);
   } else {
     folderPinned = false;
@@ -230,6 +253,55 @@ function activate(context) {
     });
     await vscode.commands.executeCommand("vscode.open", conversationUri);
   }
+
+  async function moveSession(session) {
+    const selected = await vscode.window.showOpenDialog({
+      title: "Escolha a nova pasta da sessão",
+      defaultUri: vscode.Uri.file(session.cwd),
+      canSelectFiles: false,
+      canSelectFolders: true,
+      canSelectMany: false,
+      openLabel: "Mover sessão para esta pasta",
+    });
+    if (!selected?.[0] || selected[0].fsPath === session.cwd) {
+      return;
+    }
+
+    try {
+      await client.request("thread/settings/update", {
+        threadId: session.id,
+        cwd: selected[0].fsPath,
+      });
+      void vscode.window.showInformationMessage("Sessão movida para a nova pasta.");
+      scheduleRefresh();
+    } catch (error) {
+      void vscode.window.showErrorMessage(`Não foi possível mover a sessão: ${error.message}`);
+    }
+  }
+
+  async function deleteSession(session) {
+    const confirmation = await vscode.window.showWarningMessage(
+      `Excluir a sessão “${sessionTitleForMessage(session)}”? Esta ação não pode ser desfeita.`,
+      { modal: true },
+      "Excluir sessão",
+    );
+    if (confirmation !== "Excluir sessão") {
+      return;
+    }
+
+    try {
+      await client.request("thread/delete", { threadId: session.id });
+      void vscode.window.showInformationMessage("Sessão excluída.");
+      scheduleRefresh();
+    } catch (error) {
+      void vscode.window.showErrorMessage(`Não foi possível excluir a sessão: ${error.message}`);
+    }
+  }
+}
+
+function sessionTitleForMessage(session) {
+  const title = session.name?.trim() || session.preview?.split(/\r?\n/).find(Boolean)?.trim();
+  return title || session.id;
 }
 
 function deactivate() {}

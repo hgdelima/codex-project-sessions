@@ -9,6 +9,7 @@ Extensão para organizar e retomar sessões locais do Codex por workspace ou pas
 - Filtra pela pasta atual, opcionalmente incluindo todas as subpastas.
 - Acompanha automaticamente a pasta do arquivo ativo no Explorer.
 - Permite fixar qualquer pasta pelo menu de contexto do Explorer.
+- O menu de contexto de cada pasta do Explorer oferece ações para filtrar sessões, limpar o filtro e criar uma nova sessão naquele local.
 - Abre uma sessão diretamente no editor/painel da extensão oficial do Codex.
 - Permite excluir ou mover uma sessão para outra pasta pelas ações inline da lista.
 - Permite limpar o filtro de pasta pelo botão de borracha no título do painel.

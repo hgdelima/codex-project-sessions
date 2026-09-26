@@ -2,7 +2,7 @@
   "name": "codex-project-sessions",
   "displayName": "Codex Project Sessions",
   "description": "Organiza e retoma sessões locais do Codex por workspace ou pasta no VS Code.",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "publisher": "local",
   "private": true,
   "engines": {
@@ -24,6 +24,8 @@
     "onCommand:codexProjectSessions.chooseFolder",
     "onCommand:codexProjectSessions.clearFolderFilter",
     "onCommand:codexProjectSessions.useExplorerFolder",
+    "onCommand:codexProjectSessions.filterExplorerFolder",
+    "onCommand:codexProjectSessions.newSessionAtExplorerFolder",
     "onCommand:codexProjectSessions.followActiveWorkspace",
     "onCommand:codexProjectSessions.resumeSession",
     "onCommand:codexProjectSessions.moveSession",
@@ -82,6 +84,18 @@
         "command": "codexProjectSessions.useExplorerFolder",
         "title": "Usar pasta para sessões do Codex",
         "category": "Codex Sessions"
+      },
+      {
+        "command": "codexProjectSessions.filterExplorerFolder",
+        "title": "Filtrar sessões por esta pasta",
+        "category": "Codex Sessions",
+        "icon": "$(filter)"
+      },
+      {
+        "command": "codexProjectSessions.newSessionAtExplorerFolder",
+        "title": "Nova sessão nesta pasta",
+        "category": "Codex Sessions",
+        "icon": "$(add)"
       },
       {
         "command": "codexProjectSessions.followActiveWorkspace",
@@ -196,7 +210,22 @@
         {
           "command": "codexProjectSessions.useExplorerFolder",
           "when": "explorerResourceIsFolder",
-          "group": "navigation@100"
+          "group": "codex@1"
+        },
+        {
+          "command": "codexProjectSessions.filterExplorerFolder",
+          "when": "explorerResourceIsFolder",
+          "group": "codex@2"
+        },
+        {
+          "command": "codexProjectSessions.clearFolderFilter",
+          "when": "explorerResourceIsFolder",
+          "group": "codex@3"
+        },
+        {
+          "command": "codexProjectSessions.newSessionAtExplorerFolder",
+          "when": "explorerResourceIsFolder",
+          "group": "codex@4"
         }
       ]
     },

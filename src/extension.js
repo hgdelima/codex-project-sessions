@@ -124,6 +124,24 @@ function activate(context) {
         }
       },
     ),
+    vscode.commands.registerCommand(
+      "codexProjectSessions.filterExplorerFolder",
+      async (resource, selectedResources) => {
+        const selected = resource ?? selectedResources?.[0];
+        if (selected?.scheme === "file") {
+          await setFolder(selected.fsPath, true);
+        }
+      },
+    ),
+    vscode.commands.registerCommand(
+      "codexProjectSessions.newSessionAtExplorerFolder",
+      async (resource, selectedResources) => {
+        const selected = resource ?? selectedResources?.[0];
+        if (selected?.scheme === "file") {
+          await createNewSession(selected.fsPath);
+        }
+      },
+    ),
     vscode.commands.registerCommand("codexProjectSessions.followActiveWorkspace", followActiveWorkspace),
     vscode.commands.registerCommand("codexProjectSessions.resumeSession", async (value) => {
       const session = unwrapSession(value);
@@ -295,6 +313,20 @@ function activate(context) {
       scheduleRefresh();
     } catch (error) {
       void vscode.window.showErrorMessage(`Não foi possível excluir a sessão: ${error.message}`);
+    }
+  }
+
+  async function createNewSession(folderPath) {
+    try {
+      const response = await client.request("thread/start", { cwd: folderPath });
+      const threadId = response?.thread?.id;
+      if (!threadId) {
+        throw new Error("O Codex não retornou o ID da nova sessão.");
+      }
+      await openCodexSession({ id: threadId });
+      scheduleRefresh();
+    } catch (error) {
+      void vscode.window.showErrorMessage(`Não foi possível criar a sessão: ${error.message}`);
     }
   }
 }

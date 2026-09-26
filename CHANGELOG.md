@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4
+
+- Desfaz a árvore adicional de workspaces/pastas no painel e adiciona as ações ao menu de contexto das pastas do Explorer.
+
 ## 0.1.2
 
 - Adiciona ações inline para excluir e mover sessões para outra pasta.

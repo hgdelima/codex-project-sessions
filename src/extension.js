@@ -323,13 +323,29 @@ function activate(context) {
 
   async function createNewSession(folderPath) {
     try {
-      const response = await client.request("thread/start", { cwd: folderPath });
-      const threadId = response?.thread?.id;
-      if (!threadId) {
-        throw new Error("O Codex não retornou o ID da nova sessão.");
+      const officialExtension = vscode.extensions.getExtension("openai.chatgpt");
+      if (!officialExtension) {
+        throw new Error("A extensão oficial do Codex não está instalada.");
       }
-      await openCodexSession({ id: threadId });
-      scheduleRefresh();
+
+      await officialExtension.activate();
+      const commands = await vscode.commands.getCommands(true);
+      if (!commands.includes("chatgpt.newCodexPanel")) {
+        throw new Error("A extensão oficial do Codex não disponibilizou o comando de novo painel.");
+      }
+
+      // O Codex oficial precisa criar e registrar a thread no próprio app-server.
+      // Criar thread/start neste app-server e abrir o ID com o editor oficial
+      // causa hydration_failed/no rollout found e deixa o painel em loop.
+      await vscode.commands.executeCommand("chatgpt.newCodexPanel");
+
+      // O diretório efetivo pode ser escolhido no seletor "Trabalhar no local"
+      // do painel oficial, que é a API suportada pelo Codex.
+      if (folderPath && !isInsideOpenWorkspace(folderPath)) {
+        void vscode.window.showInformationMessage(
+          "Novo painel do Codex aberto. Selecione a pasta desejada em ‘Trabalhar no local’.",
+        );
+      }
     } catch (error) {
       void vscode.window.showErrorMessage(`Não foi possível criar a sessão: ${error.message}`);
     }

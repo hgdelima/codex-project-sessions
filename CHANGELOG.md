@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6
+
+- Corrige o loop de erro ao criar uma nova sessão pelo menu do Explorer usando o novo painel nativo do Codex.
+
 ## 0.1.5
 
 - Corrige a abertura de novas sessões no editor nativo do Codex para evitar o estado de carregamento contínuo.

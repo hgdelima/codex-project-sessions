@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.7
+
+- Vincula “Nova sessão nesta pasta” à pasta selecionada adicionando-a como raiz do workspace antes de abrir o painel nativo do Codex.
+
 ## 0.1.6
 
 - Corrige o loop de erro ao criar uma nova sessão pelo menu do Explorer usando o novo painel nativo do Codex.

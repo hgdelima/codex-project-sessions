@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
   <Metadata>
-    <Identity Language="pt-BR" Id="codex-project-sessions" Version="0.1.6" Publisher="local" />
+    <Identity Language="pt-BR" Id="codex-project-sessions" Version="0.1.7" Publisher="local" />
     <DisplayName>Codex Project Sessions</DisplayName>
     <Description xml:space="preserve">Organiza e retoma sessões locais do Codex por workspace ou pasta no VS Code.</Description>
     <Tags>codex,sessions,workspace,chat</Tags>

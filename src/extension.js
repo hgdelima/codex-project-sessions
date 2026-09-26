@@ -334,18 +334,25 @@ function activate(context) {
         throw new Error("A extensão oficial do Codex não disponibilizou o comando de novo painel.");
       }
 
+      const normalizedFolderPath = path.resolve(folderPath);
+      const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
+      const isWorkspaceRoot = workspaceFolders.some(
+        (workspaceFolder) => path.resolve(workspaceFolder.uri.fsPath) === normalizedFolderPath,
+      );
+      if (!isWorkspaceRoot) {
+        const added = vscode.workspace.updateWorkspaceFolders(0, 0, {
+          uri: vscode.Uri.file(normalizedFolderPath),
+          name: path.basename(normalizedFolderPath),
+        });
+        if (!added) {
+          throw new Error("Não foi possível adicionar a pasta selecionada ao workspace.");
+        }
+      }
+
       // O Codex oficial precisa criar e registrar a thread no próprio app-server.
       // Criar thread/start neste app-server e abrir o ID com o editor oficial
       // causa hydration_failed/no rollout found e deixa o painel em loop.
       await vscode.commands.executeCommand("chatgpt.newCodexPanel");
-
-      // O diretório efetivo pode ser escolhido no seletor "Trabalhar no local"
-      // do painel oficial, que é a API suportada pelo Codex.
-      if (folderPath && !isInsideOpenWorkspace(folderPath)) {
-        void vscode.window.showInformationMessage(
-          "Novo painel do Codex aberto. Selecione a pasta desejada em ‘Trabalhar no local’.",
-        );
-      }
     } catch (error) {
       void vscode.window.showErrorMessage(`Não foi possível criar a sessão: ${error.message}`);
     }

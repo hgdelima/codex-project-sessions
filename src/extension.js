@@ -330,31 +330,45 @@ function activate(context) {
         throw new Error("A extensão oficial do Codex não está instalada.");
       }
 
+      const cwd = path.resolve(folderPath);
+      const response = await client.request("thread/start", {
+        cwd,
+        approvalPolicy: "on-request",
+        sandbox: "workspace-write",
+      });
+      const threadId = response?.thread?.id;
+      if (!threadId) {
+        throw new Error("O Codex não retornou o ID da nova sessão.");
+      }
+
+      // Uma thread vazia ainda não possui rollout persistido. Um turno vazio
+      // materializa o arquivo sem inserir mensagem visível para o usuário;
+      // depois o processo deste cliente é reiniciado e o editor oficial pode
+      // retomar a mesma thread com o cwd correto.
+      await client.request("turn/start", {
+        threadId,
+        input: [],
+        cwd,
+        approvalPolicy: "on-request",
+        sandboxPolicy: {
+          type: "workspaceWrite",
+          writableRoots: [cwd],
+          networkAccess: false,
+        },
+        model: null,
+        effort: "medium",
+        summary: "none",
+        personality: null,
+        outputSchema: null,
+        collaborationMode: null,
+      });
+
+      // O rollout foi criado pelo nosso processo; encerre-o antes do resume
+      // para que o app-server oficial não encontre um escritor ativo.
+      recreateClient();
       await officialExtension.activate();
-      const commands = await vscode.commands.getCommands(true);
-      if (!commands.includes("chatgpt.newCodexPanel")) {
-        throw new Error("A extensão oficial do Codex não disponibilizou o comando de novo painel.");
-      }
-
-      const normalizedFolderPath = path.resolve(folderPath);
-      const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
-      const isWorkspaceRoot = workspaceFolders.some(
-        (workspaceFolder) => path.resolve(workspaceFolder.uri.fsPath) === normalizedFolderPath,
-      );
-      if (!isWorkspaceRoot) {
-        const added = vscode.workspace.updateWorkspaceFolders(0, 0, {
-          uri: vscode.Uri.file(normalizedFolderPath),
-          name: path.basename(normalizedFolderPath),
-        });
-        if (!added) {
-          throw new Error("Não foi possível adicionar a pasta selecionada ao workspace.");
-        }
-      }
-
-      // O Codex oficial precisa criar e registrar a thread no próprio app-server.
-      // Criar thread/start neste app-server e abrir o ID com o editor oficial
-      // causa hydration_failed/no rollout found e deixa o painel em loop.
-      await vscode.commands.executeCommand("chatgpt.newCodexPanel");
+      await openCodexSession({ id: threadId });
+      scheduleRefresh();
     } catch (error) {
       void vscode.window.showErrorMessage(`Não foi possível criar a sessão: ${error.message}`);
     }

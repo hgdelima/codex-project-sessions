@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.9
+
+- Corrige a criação de sessões pelo Explorer para persistir o `cwd` real da pasta selecionada e permitir encontrá-las pelo filtro.
+
 ## 0.1.8
 
 - Exibe a pasta de cada sessão ao lado do nome no painel.

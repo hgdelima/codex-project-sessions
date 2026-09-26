@@ -12,6 +12,7 @@ Extensão para organizar e retomar sessões locais do Codex por workspace ou pas
 - Abre uma sessão diretamente no editor/painel da extensão oficial do Codex.
 - Permite excluir ou mover uma sessão para outra pasta pelas ações inline da lista.
 - Permite limpar o filtro de pasta pelo botão de borracha no título do painel.
+- Exibe workspaces e pastas com ações inline para filtrar, limpar o filtro e criar uma nova sessão naquele local.
 - Exibe detalhes da sessão e oferece atalhos para copiar o ID ou revelar sua pasta.
 
 ## Uso

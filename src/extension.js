@@ -8,6 +8,7 @@ const { SessionDetailsProvider } = require("./sessionDetailsProvider");
 const {
   relativeFolderLabel,
   SessionTreeProvider,
+  unwrapLocation,
   unwrapSession,
 } = require("./sessionTreeProvider");
 
@@ -33,6 +34,7 @@ function activate(context) {
 
   let folderPinned = context.workspaceState.get(folderPinnedKey, false);
   let allFolders = context.workspaceState.get(allFoldersKey, false);
+  provider.setWorkspaceFolders(vscode.workspace.workspaceFolders);
   let refreshTimer;
   let periodicRefresh;
   let clientChangeSubscription = client.onDidChangeSessions(() => scheduleRefresh(300));
@@ -115,6 +117,18 @@ function activate(context) {
     vscode.commands.registerCommand("codexProjectSessions.clearFolderFilter", async () => {
       await setFolder(undefined, false, true);
     }),
+    vscode.commands.registerCommand("codexProjectSessions.filterLocation", async (value) => {
+      const location = unwrapLocation(value);
+      if (location) {
+        await setFolder(location.path, true);
+      }
+    }),
+    vscode.commands.registerCommand("codexProjectSessions.newSessionAtLocation", async (value) => {
+      const location = unwrapLocation(value);
+      if (location) {
+        await createNewSession(location.path);
+      }
+    }),
     vscode.commands.registerCommand(
       "codexProjectSessions.useExplorerFolder",
       async (resource, selectedResources) => {
@@ -179,6 +193,7 @@ function activate(context) {
       }
     }),
     vscode.workspace.onDidChangeWorkspaceFolders(async () => {
+      provider.setWorkspaceFolders(vscode.workspace.workspaceFolders);
       if (allFolders) {
         scheduleRefresh();
       } else if (!folderPinned || !provider.folder || !isInsideOpenWorkspace(provider.folder)) {
@@ -295,6 +310,20 @@ function activate(context) {
       scheduleRefresh();
     } catch (error) {
       void vscode.window.showErrorMessage(`Não foi possível excluir a sessão: ${error.message}`);
+    }
+  }
+
+  async function createNewSession(folderPath) {
+    try {
+      const response = await client.request("thread/start", { cwd: folderPath });
+      const threadId = response?.thread?.id;
+      if (!threadId) {
+        throw new Error("O Codex não retornou o ID da nova sessão.");
+      }
+      await openCodexSession({ id: threadId });
+      scheduleRefresh();
+    } catch (error) {
+      void vscode.window.showErrorMessage(`Não foi possível criar a sessão: ${error.message}`);
     }
   }
 }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Exibe workspaces e pastas com ações inline para filtrar, limpar o filtro e criar uma nova sessão vinculada ao local.
+
 ## 0.1.2
 
 - Adiciona ações inline para excluir e mover sessões para outra pasta.

@@ -132,6 +132,7 @@ class CodexAppServerClient {
         version: this.clientVersion,
       },
       capabilities: {
+        experimentalApi: true,
         optOutNotificationMethods: [
           "account/updated",
           "remoteControl/status/changed",

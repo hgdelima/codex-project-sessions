@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.10
+
+- Habilita a capacidade `experimentalApi` necessária para mover sessões com `thread/settings/update`.
+
 ## 0.1.9
 
 - Corrige a criação de sessões pelo Explorer para persistir o `cwd` real da pasta selecionada e permitir encontrá-las pelo filtro.

@@ -17,8 +17,6 @@ class SessionTreeProvider {
     this.treeChanged = new vscode.EventEmitter();
     this.onDidChangeTreeData = this.treeChanged.event;
     this.groups = [];
-    this.locations = [];
-    this.workspaceFolders = [];
     this.selectedFolder = undefined;
     this.loading = false;
     this.lastError = undefined;
@@ -33,12 +31,6 @@ class SessionTreeProvider {
     this.selectedFolder = folderPath;
     this.groups = [];
     this.lastError = undefined;
-    this.treeChanged.fire(undefined);
-  }
-
-  setWorkspaceFolders(workspaceFolders) {
-    this.workspaceFolders = workspaceFolders ?? [];
-    this.locations = buildLocations(this.workspaceFolders, this.groups);
     this.treeChanged.fire(undefined);
   }
 
@@ -93,7 +85,6 @@ class SessionTreeProvider {
         return;
       }
       this.groups = groupSessions(sessions);
-      this.locations = buildLocations(this.workspaceFolders, this.groups);
     } catch (error) {
       if (generation !== this.refreshGeneration) {
         return;
@@ -114,15 +105,7 @@ class SessionTreeProvider {
 
   getChildren(element) {
     if (!element) {
-      const children = [];
-      if (this.locations.length > 0) {
-        children.push(new LocationGroupItem(this.locations));
-      }
-      children.push(...this.groups.map((group) => new SessionGroupItem(group)));
-      return children;
-    }
-    if (element instanceof LocationGroupItem) {
-      return element.locations.map((location) => new LocationItem(location));
+      return this.groups.map((group) => new SessionGroupItem(group));
     }
     if (element instanceof SessionGroupItem) {
       return element.group.sessions.map((session) => new SessionItem(session));
@@ -137,31 +120,6 @@ class SessionGroupItem extends vscode.TreeItem {
     this.group = group;
     this.contextValue = "codexSessionGroup";
     this.iconPath = new vscode.ThemeIcon("calendar");
-  }
-}
-
-class LocationGroupItem extends vscode.TreeItem {
-  constructor(locations) {
-    super(`Workspaces e pastas (${locations.length})`, vscode.TreeItemCollapsibleState.Expanded);
-    this.locations = locations;
-    this.contextValue = "codexLocationGroup";
-    this.iconPath = new vscode.ThemeIcon("folder-library");
-  }
-}
-
-class LocationItem extends vscode.TreeItem {
-  constructor(location) {
-    super(location.label, vscode.TreeItemCollapsibleState.None);
-    this.location = location;
-    this.contextValue = "codexLocation";
-    this.description = location.kind === "workspace" ? "workspace" : location.workspaceLabel;
-    this.iconPath = new vscode.ThemeIcon(location.kind === "workspace" ? "root-folder" : "folder");
-    this.tooltip = `${location.kind === "workspace" ? "Workspace" : "Pasta"}: ${location.path}`;
-    this.command = {
-      command: "codexProjectSessions.filterLocation",
-      title: "Filtrar sessões por este local",
-      arguments: [this],
-    };
   }
 }
 
@@ -190,13 +148,6 @@ function unwrapSession(value) {
     return undefined;
   }
   return value instanceof SessionItem ? value.session : value;
-}
-
-function unwrapLocation(value) {
-  if (!value) {
-    return undefined;
-  }
-  return value instanceof LocationItem ? value.location : value;
 }
 
 function sessionIcon(session) {
@@ -236,54 +187,6 @@ function escapeMarkdown(value) {
   return value.replace(/[\\`*_{}[\]()#+\-.!]/g, "\\$&");
 }
 
-function buildLocations(workspaceFolders, groups) {
-  const locations = new Map();
-  const workspaceByPath = new Map();
-
-  for (const workspaceFolder of workspaceFolders) {
-    const workspacePath = path.resolve(workspaceFolder.uri.fsPath);
-    const location = {
-      kind: "workspace",
-      label: workspaceFolder.name,
-      path: workspacePath,
-      workspaceLabel: workspaceFolder.name,
-    };
-    locations.set(workspacePath, location);
-    workspaceByPath.set(workspacePath, location);
-  }
-
-  const sessions = groups.flatMap((group) => group.sessions);
-  for (const session of sessions) {
-    const sessionPath = path.resolve(session.cwd);
-    const workspace = [...workspaceByPath.values()].find((candidate) =>
-      isPathWithin(candidate.path, sessionPath),
-    );
-    if (!workspace || sessionPath === workspace.path) {
-      continue;
-    }
-
-    let currentPath = sessionPath;
-    while (isPathWithin(workspace.path, currentPath) && currentPath !== workspace.path) {
-      if (!locations.has(currentPath)) {
-        locations.set(currentPath, {
-          kind: "folder",
-          label: path.relative(workspace.path, currentPath),
-          path: currentPath,
-          workspaceLabel: workspace.label,
-        });
-      }
-      currentPath = path.dirname(currentPath);
-    }
-  }
-
-  return [...locations.values()].sort((left, right) => {
-    if (left.kind !== right.kind) {
-      return left.kind === "workspace" ? -1 : 1;
-    }
-    return left.label.localeCompare(right.label, "pt-BR");
-  });
-}
-
 function relativeFolderLabel(folderPath, workspaceFolder) {
   if (!workspaceFolder) {
     return path.basename(folderPath);
@@ -294,9 +197,7 @@ function relativeFolderLabel(folderPath, workspaceFolder) {
 
 module.exports = {
   relativeFolderLabel,
-  LocationItem,
   SessionItem,
   SessionTreeProvider,
-  unwrapLocation,
   unwrapSession,
 };

@@ -269,7 +269,12 @@ function activate(context) {
       scheme: "openai-codex",
       authority: "route",
     });
-    await vscode.commands.executeCommand("vscode.open", conversationUri);
+    await vscode.commands.executeCommand(
+      "vscode.openWith",
+      conversationUri,
+      "chatgpt.conversationEditor",
+      { preserveFocus: false, preview: false },
+    );
   }
 
   async function moveSession(session) {

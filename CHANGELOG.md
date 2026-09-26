@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5
+
+- Corrige a abertura de novas sessões no editor nativo do Codex para evitar o estado de carregamento contínuo.
+
 ## 0.1.4
 
 - Desfaz a árvore adicional de workspaces/pastas no painel e adiciona as ações ao menu de contexto das pastas do Explorer.

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.8
+
+- Exibe a pasta de cada sessão ao lado do nome no painel.
+- Corrige o comando de filtro por pasta no menu contextual do Explorer e força a atualização da lista.
+
 ## 0.1.7
 
 - Vincula “Nova sessão nesta pasta” à pasta selecionada adicionando-a como raiz do workspace antes de abrir o painel nativo do Codex.

@@ -62,10 +62,11 @@ function activate(context) {
   }
 
   const setFolder = async (folderPath, pinned, showAll = false) => {
+    const normalizedFolderPath = folderPath ? path.resolve(folderPath) : undefined;
     folderPinned = pinned;
     allFolders = showAll;
-    provider.setFolder(folderPath);
-    await context.workspaceState.update(selectedFolderKey, folderPath);
+    provider.setFolder(normalizedFolderPath);
+    await context.workspaceState.update(selectedFolderKey, normalizedFolderPath);
     await context.workspaceState.update(folderPinnedKey, pinned);
     await context.workspaceState.update(allFoldersKey, showAll);
     updateView();
@@ -118,8 +119,8 @@ function activate(context) {
     vscode.commands.registerCommand(
       "codexProjectSessions.useExplorerFolder",
       async (resource, selectedResources) => {
-        const selected = resource ?? selectedResources?.[0];
-        if (selected?.scheme === "file") {
+        const selected = explorerResource(resource, selectedResources);
+        if (selected) {
           await setFolder(selected.fsPath, true);
         }
       },
@@ -127,9 +128,10 @@ function activate(context) {
     vscode.commands.registerCommand(
       "codexProjectSessions.filterExplorerFolder",
       async (resource, selectedResources) => {
-        const selected = resource ?? selectedResources?.[0];
-        if (selected?.scheme === "file") {
+        const selected = explorerResource(resource, selectedResources);
+        if (selected) {
           await setFolder(selected.fsPath, true);
+          await refresh();
         }
       },
     ),
@@ -417,6 +419,11 @@ function activeExplorerFolder() {
     name: path.basename(path.dirname(activeUri.fsPath)),
     uri: vscode.Uri.file(path.dirname(activeUri.fsPath)),
   };
+}
+
+function explorerResource(resource, selectedResources) {
+  const candidates = [resource, ...(selectedResources ?? [])];
+  return candidates.find((candidate) => candidate?.scheme === "file");
 }
 
 function isInsideOpenWorkspace(folderPath) {

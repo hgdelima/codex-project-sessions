@@ -128,7 +128,11 @@ class SessionItem extends vscode.TreeItem {
     super(sessionTitle(session), vscode.TreeItemCollapsibleState.None);
     this.session = session;
     this.contextValue = "codexSession";
-    this.description = `${formatRelativeTime(session.updatedAt)} · ${sourceLabel(session.source)}`;
+    const workspaceFolder = session.cwd
+      ? vscode.workspace.getWorkspaceFolder(vscode.Uri.file(session.cwd))
+      : undefined;
+    const folderLabel = session.cwd ? relativeFolderLabel(session.cwd, workspaceFolder) : "Pasta não informada";
+    this.description = `${folderLabel} · ${formatRelativeTime(session.updatedAt)} · ${sourceLabel(session.source)}`;
     this.iconPath = sessionIcon(session);
     this.command = {
       command: "codexProjectSessions.resumeSession",
@@ -137,7 +141,7 @@ class SessionItem extends vscode.TreeItem {
     };
     this.tooltip = buildTooltip(session);
     this.accessibilityInformation = {
-      label: `${sessionTitle(session)}. Atualizada ${formatRelativeTime(session.updatedAt)}.`,
+      label: `${sessionTitle(session)}. Pasta ${folderLabel}. Atualizada ${formatRelativeTime(session.updatedAt)}.`,
       role: "button",
     };
   }

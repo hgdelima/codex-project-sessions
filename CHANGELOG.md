@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.11
+
+- Retoma a thread antes de movê-la, corrigindo `thread not found` ao usar `thread/settings/update`.
+- Informa quando a sessão precisa ser fechada no painel oficial antes de ser movida.
+
 ## 0.1.10
 
 - Habilita a capacidade `experimentalApi` necessária para mover sessões com `thread/settings/update`.

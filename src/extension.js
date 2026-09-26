@@ -293,6 +293,9 @@ function activate(context) {
     }
 
     try {
+      // O app-server lista threads do disco, mas precisa carregá-las na
+      // memória antes de aceitar settings/update.
+      await client.request("thread/resume", { threadId: session.id });
       await client.request("thread/settings/update", {
         threadId: session.id,
         cwd: selected[0].fsPath,
@@ -300,7 +303,10 @@ function activate(context) {
       void vscode.window.showInformationMessage("Sessão movida para a nova pasta.");
       scheduleRefresh();
     } catch (error) {
-      void vscode.window.showErrorMessage(`Não foi possível mover a sessão: ${error.message}`);
+      const message = /active writer|already has an active writer/i.test(error.message)
+        ? "Feche a sessão no painel do Codex antes de movê-la."
+        : error.message;
+      void vscode.window.showErrorMessage(`Não foi possível mover a sessão: ${message}`);
     }
   }
 
